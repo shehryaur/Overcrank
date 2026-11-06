@@ -1,0 +1,386 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Blueprint-inspired Overcrank studio chrome.
+  Tokens harvested from @blueprintjs/colors dark-gray ladder + industrial density,
+  remapped onto Overcrank broadcast palette (chassis / phosphor / amber / hazard).
+  No Palantir branding or logos.
+*/
+
+:root {
+  color-scheme: dark;
+  --chassis: #07080c;
+  --panel: #0e1017;
+  --panel-elevated: #141820;
+  --rail: #1e2330;
+  --rail-strong: #2f3645;
+  --phosphor: #10b981;
+  --phosphor-dim: #0b7a56;
+  --amber: #f59e0b;
+  --hazard: #ef4444;
+  --cyan: #22d3ee;
+  --ink: #e8ecf2;
+  --muted: #8b95a8;
+  --faint: #5c6578;
+
+  /* Blueprint dark-gray ladder (ported) nested under chassis */
+  --bp-dark1: #1c2127;
+  --bp-dark2: #252a31;
+  --bp-dark3: #2f343c;
+  --bp-dark4: #383e47;
+  --bp-dark5: #404854;
+
+  --oc-radius: 2px;
+  --oc-font: "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
+  --oc-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(1000px 520px at 12% -8%, #121820 0%, transparent 55%),
+    radial-gradient(800px 400px at 88% 0%, #0c1512 0%, transparent 50%),
+    linear-gradient(180deg, #07080c 0%, #05060a 100%);
+  color: var(--ink);
+  font-family: var(--oc-font);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Blueprint dark + Overcrank overrides ---- */
+.bp6-dark {
+  color: var(--ink);
+  background: transparent;
+}
+
+.bp6-dark .bp6-navbar {
+  background: linear-gradient(180deg, #12161f 0%, #0c0f16 100%);
+  box-shadow: inset 0 -1px 0 var(--rail);
+  height: auto;
+  min-height: 44px;
+  padding: 6px 10px;
+}
+
+.bp6-dark .bp6-button {
+  border-radius: var(--oc-radius);
+  font-family: var(--oc-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bp6-dark .bp6-button.bp6-intent-success,
+.bp6-dark .bp6-button.bp6-intent-success.bp6-minimal:hover {
+  --bp-intent-color: var(--phosphor);
+}
+
+.bp6-dark .bp6-button.bp6-intent-warning {
+  --bp-intent-color: var(--amber);
+}
+
+.bp6-dark .bp6-button.bp6-intent-danger {
+  --bp-intent-color: var(--hazard);
+}
+
+.bp6-dark .bp6-button.bp6-intent-primary {
+  --bp-intent-color: var(--cyan);
+}
+
+.bp6-dark .bp6-input,
+.bp6-dark .bp6-html-select select,
+.bp6-dark .bp6-select select {
+  background: #0a0c12 !important;
+  border: 1px solid var(--rail) !important;
+  border-radius: var(--oc-radius) !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+  font-family: var(--oc-mono);
+  font-size: 11px;
+}
+
+.bp6-dark .bp6-input:focus,
+.bp6-dark .bp6-html-select select:focus {
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25) !important;
+}
+
+.bp6-dark .bp6-tag {
+  border-radius: var(--oc-radius);
+  font-family: var(--oc-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bp6-dark .bp6-drawer {
+  background: #0b0e14;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.55);
+}
+
+.bp6-dark .bp6-drawer-header {
+  background: linear-gradient(180deg, #141820, #0e1218);
+  box-shadow: inset 0 -1px 0 var(--rail);
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.bp6-dark .bp6-card {
+  background: var(--panel);
+  border: 1px solid var(--rail);
+  border-radius: var(--oc-radius);
+  box-shadow: none;
+  padding: 0;
+}
+
+.bp6-dark .bp6-html-table {
+  width: 100%;
+  font-family: var(--oc-mono);
+  font-size: 11px;
+}
+
+.bp6-dark .bp6-html-table th {
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10px;
+  background: #0a0c12;
+  border-bottom: 1px solid var(--rail);
+}
+
+.bp6-dark .bp6-html-table td {
+  border-bottom: 1px solid var(--rail);
+  color: var(--ink);
+}
+
+.bp6-dark .bp6-tabs .bp6-tab {
+  font-family: var(--oc-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bp6-dark .bp6-tabs .bp6-tab[aria-selected="true"] {
+  color: var(--phosphor);
+}
+
+.bp6-dark .bp6-tab-indicator-wrapper .bp6-tab-indicator {
+  background-color: var(--phosphor);
+}
+
+/* ---- Overcrank panel chrome (Blueprint density + broadcast) ---- */
+.oc-shell {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 8px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100%;
+}
+
+.oc-panel {
+  background: linear-gradient(180deg, rgba(16, 19, 28, 0.98), rgba(10, 12, 18, 0.99));
+  border: 1px solid var(--rail);
+  border-radius: var(--oc-radius);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.oc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rail);
+  background: linear-gradient(180deg, #141820 0%, #0f1219 100%);
+  min-height: 32px;
+}
+
+.oc-panel-title {
+  font-family: var(--oc-font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.oc-panel-meta {
+  font-family: var(--oc-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.oc-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--phosphor);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  animation: ocPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ocPulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 10px 2px rgba(16, 185, 129, 0.35);
+  }
+}
+
+.oc-brand {
+  font-family: var(--oc-font);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--phosphor);
+}
+
+.oc-brand-sub {
+  font-family: var(--oc-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.oc-rig-row {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--rail);
+  background: #0a0c12;
+  padding: 7px 9px;
+  border-radius: var(--oc-radius);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.oc-rig-row:hover {
+  border-color: var(--rail-strong);
+  background: #0e1218;
+}
+
+.oc-rig-row.is-active {
+  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: inset 3px 0 0 var(--phosphor);
+}
+
+.oc-monitor {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--rail);
+  border-radius: var(--oc-radius);
+  min-height: 280px;
+}
+
+.oc-monitor.is-ref {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.oc-monitor.is-raw {
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.oc-monitor.is-conf {
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+.oc-monitor::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.012) 3px
+  );
+}
+
+.oc-align-rail {
+  width: 6px;
+  height: 140px;
+  background: var(--bp-dark3);
+  border: 1px solid var(--rail);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.oc-align-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: height 700ms ease;
+}
+
+.oc-track {
+  border: 1px solid var(--rail);
+  background: #080a10;
+  border-radius: var(--oc-radius);
+}
+
+.oc-conform-btn.bp6-button {
+  font-size: 12px !important;
+  letter-spacing: 0.08em !important;
+  height: 36px !important;
+  padding: 0 18px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.oc-conform-btn.bp6-button::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  animation: ocSweep 2.4s linear infinite;
+}
+
+@keyframes ocSweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(380%);
+  }
+}
+
+.oc-code {
+  font-family: var(--oc-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  background: #080a10;
+  border: 1px solid var(--rail);
+  padding: 10px;
+  border-radius: var(--oc-radius);
+  color: #c8d0dc;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bp-dark4);
+  border-radius: 2px;
+}

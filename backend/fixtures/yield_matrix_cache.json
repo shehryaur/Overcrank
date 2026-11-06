@@ -1,0 +1,151 @@
+{
+  "sf_founder_interviews": {
+    "cohort_id": "sf_founder_interviews",
+    "label": "SF AI & Founder Interviews (@hippodupac Benchmark)",
+    "indexed_videos": 14820,
+    "baseline_er": 0.042,
+    "rigs": [
+      {
+        "rig_id": "rig_street_broll_punch",
+        "title": "Walking Street Mic + 1.1s B-Roll Flash (0-4s)",
+        "visual_query": "person holding wireless mic outdoors street walking fast cut overlay",
+        "saturation_pct": 1.6,
+        "yield_multiplier": 3.45,
+        "quadrant": "HIGH_YIELD_UNSATURATED",
+        "sample_count": 237,
+        "mean_views": 412000,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "@hippodupac",
+        "target_specs": {
+          "splices_per_10s": 7.8,
+          "mean_shot_ms": 1280,
+          "dead_air_max_ms": 120,
+          "focal_push_scale": 1.16,
+          "hook_broll_timestamps": [1.1, 2.3, 3.6]
+        }
+      },
+      {
+        "rig_id": "rig_whiteboard_kinetic",
+        "title": "Over-Shoulder Diagram Draw + Rapid 1.18x Punch",
+        "visual_query": "hand drawing architecture diagram whiteboard marker closeup zoom",
+        "saturation_pct": 2.4,
+        "yield_multiplier": 2.95,
+        "quadrant": "HIGH_YIELD_UNSATURATED",
+        "sample_count": 355,
+        "mean_views": 289000,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "@databysumit",
+        "target_specs": {
+          "splices_per_10s": 6.9,
+          "mean_shot_ms": 1450,
+          "dead_air_max_ms": 140,
+          "focal_push_scale": 1.18,
+          "hook_broll_timestamps": [0.9, 2.5, 4.1]
+        }
+      },
+      {
+        "rig_id": "rig_dual_telemetry_split",
+        "title": "Live Terminal / Chart Top-Half + Face Cam Bottom",
+        "visual_query": "vertical split screen code terminal dashboard top talking head bottom",
+        "saturation_pct": 4.1,
+        "yield_multiplier": 2.6,
+        "quadrant": "HIGH_YIELD_UNSATURATED",
+        "sample_count": 607,
+        "mean_views": 215000,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "@jeanklee",
+        "target_specs": {
+          "splices_per_10s": 6.2,
+          "mean_shot_ms": 1610,
+          "dead_air_max_ms": 150,
+          "focal_push_scale": 1.14,
+          "hook_broll_timestamps": [1.4, 3.0]
+        }
+      },
+      {
+        "rig_id": "rig_static_podcast_couch",
+        "title": "Static Two-Shot Couch / Studio Podcast Mic",
+        "visual_query": "two people sitting on couch studio microphone static camera",
+        "saturation_pct": 48.5,
+        "yield_multiplier": 0.58,
+        "quadrant": "OVERSATURATED_LOW_YIELD",
+        "sample_count": 7187,
+        "mean_views": 19400,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "Cohort Median",
+        "target_specs": {
+          "splices_per_10s": 2.1,
+          "mean_shot_ms": 4760,
+          "dead_air_max_ms": 520,
+          "focal_push_scale": 1.0,
+          "hook_broll_timestamps": []
+        }
+      },
+      {
+        "rig_id": "rig_desk_monologue_ungraded",
+        "title": "Un-cut Desk Monologue (Zero Push First 5s)",
+        "visual_query": "single person sitting at desk talking to webcam static frame",
+        "saturation_pct": 34.2,
+        "yield_multiplier": 0.71,
+        "quadrant": "OVERSATURATED_LOW_YIELD",
+        "sample_count": 5068,
+        "mean_views": 24100,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "Cohort Median",
+        "target_specs": {
+          "splices_per_10s": 1.8,
+          "mean_shot_ms": 5500,
+          "dead_air_max_ms": 480,
+          "focal_push_scale": 1.02,
+          "hook_broll_timestamps": []
+        }
+      }
+    ]
+  },
+  "eng_career_playbooks": {
+    "cohort_id": "eng_career_playbooks",
+    "label": "Software Eng & Growth Playbooks (@jeanklee / @datawithamney)",
+    "indexed_videos": 19340,
+    "baseline_er": 0.051,
+    "rigs": [
+      {
+        "rig_id": "rig_salary_receipt_hook",
+        "title": "0.8s Compensation/Metric Card Flash + Hard Cut",
+        "visual_query": "close up screen metric chart number overlay fast zoom talking head",
+        "saturation_pct": 1.9,
+        "yield_multiplier": 3.72,
+        "quadrant": "HIGH_YIELD_UNSATURATED",
+        "sample_count": 367,
+        "mean_views": 380000,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "@jeanklee",
+        "target_specs": {
+          "splices_per_10s": 8.1,
+          "mean_shot_ms": 1230,
+          "dead_air_max_ms": 110,
+          "focal_push_scale": 1.17,
+          "hook_broll_timestamps": [0.8, 1.9, 3.2]
+        }
+      },
+      {
+        "rig_id": "rig_green_screen_point",
+        "title": "Static Green Screen Head Floating Over Article",
+        "visual_query": "green screen talking head bottom corner news article background",
+        "saturation_pct": 41.0,
+        "yield_multiplier": 0.64,
+        "quadrant": "OVERSATURATED_LOW_YIELD",
+        "sample_count": 7929,
+        "mean_views": 21000,
+        "reference_video": "ref_hippolyte_outlier.mp4",
+        "reference_creator": "Cohort Median",
+        "target_specs": {
+          "splices_per_10s": 2.4,
+          "mean_shot_ms": 4100,
+          "dead_air_max_ms": 430,
+          "focal_push_scale": 1.0,
+          "hook_broll_timestamps": []
+        }
+      }
+    ]
+  }
+}
