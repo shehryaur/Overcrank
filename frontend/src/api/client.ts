@@ -1,18 +1,14 @@
 import type {
-  CohortSummary,
   CompareResponse,
   ConformResponse,
-  HealthResponse,
-  YieldMatrix,
+  TopicSearchResponse,
 } from "../types/telemetry";
 
-const API_BASE = "";
-
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${url}`, init);
+  const res = await fetch(url, init);
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`${res.status} ${text}`);
+    throw new Error(text || `${res.status}`);
   }
   return res.json() as Promise<T>;
 }
@@ -23,27 +19,13 @@ export function mediaUrl(path: string): string {
   return path.startsWith("/") ? path : `/${path}`;
 }
 
-export type SecretsStatus = {
-  env_file: string;
-  instructions: string;
-  vars: Array<{
-    name: string;
-    required: boolean;
-    set: boolean;
-    value?: string;
-    purpose: string;
-  }>;
-};
-
 export const api = {
-  health: () => jsonFetch<HealthResponse>("/api/health"),
-  secretsStatus: () => jsonFetch<SecretsStatus>("/api/secrets/status"),
-  cohorts: () => jsonFetch<CohortSummary[]>("/api/cohorts"),
-  yieldMatrix: (cohortId: string, visualQuery?: string) => {
-    const q = new URLSearchParams({ cohort_id: cohortId });
-    if (visualQuery) q.set("visual_query", visualQuery);
-    return jsonFetch<YieldMatrix>(`/api/yield-matrix?${q.toString()}`);
-  },
+  topicSearch: (query: string, cohortId = "sf_founder_interviews") =>
+    jsonFetch<TopicSearchResponse>("/api/topic/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, cohort_id: cohortId, limit: 8 }),
+    }),
   compare: (cohortId: string, rigId: string, rawFilename?: string) =>
     jsonFetch<CompareResponse>("/api/telemetry/compare", {
       method: "POST",
@@ -72,4 +54,23 @@ export const api = {
       body,
     });
   },
+  openInCompound: (payload: {
+    conformed_filename: string;
+    compound_prompt: string;
+    compound_edl?: ConformResponse["compound_edl"];
+    rig_title: string;
+  }) =>
+    jsonFetch<{
+      project_dir: string;
+      display_name: string;
+      zip_url: string;
+      agent_line: string;
+      hint: string;
+      steps: string[];
+      assist: { finder?: boolean; clipboard?: boolean; app?: string };
+    }>("/api/compound/open", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, launch: true }),
+    }),
 };
