@@ -1,6 +1,6 @@
 # Overcrank
 
-**Hack the Feed finalist** — format arbitrage for short-form video.
+Built by **Shehryar Hassan** · **Hack the Feed finalist** — format arbitrage for short-form video.
 
 Creators don’t fail because they can’t film. They fail because they copy the *wrong* cut. Overcrank finds Shorts that already work for a topic, scores the shooting/edit style (yield vs saturation), aligns your raw take to that format’s physics, then hands you a Compound pack to finish the edit.
 
