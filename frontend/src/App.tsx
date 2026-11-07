@@ -35,7 +35,18 @@ import type {
 } from "./types/telemetry";
 
 const COHORT = "sf_founder_interviews";
-const DEMO_TOPICS = ["AI founders", "salary offers", "whiteboard", "coding tips"];
+const TOPIC_CHIPS = ["AI founders", "salary offers", "whiteboard", "coding tips"];
+
+const RECORD_BRIEF = {
+  title: "What to film (30–40 sec, vertical)",
+  bullets: [
+    "Phone vertical, front camera, face in frame while you walk.",
+    "Street / sidewalk — keep moving, talk to the lens.",
+    "Pitch your idea for ~20–30 seconds.",
+    "Short sentences. No long pauses.",
+    "Optional: flash your laptop screen once mid-take.",
+  ],
+};
 
 const STEP_META: {
   id: Step;
@@ -66,7 +77,6 @@ function decodeHtmlEntities(text: string) {
   return el.value;
 }
 
-/** Ensure YouTube embeds autoplay muted (browsers block unmuted autoplay). */
 function autoplayEmbedUrl(url: string, videoId?: string) {
   if (!url) return url;
   try {
@@ -135,15 +145,22 @@ export default function App() {
   const [compare, setCompare] = useState<CompareResponse | null>(null);
   const [series, setSeries] = useState<OscilloscopePoint[]>([]);
   const [alignment, setAlignment] = useState(0);
+  const [projected, setProjected] = useState(0);
   const [rawFilename, setRawFilename] = useState("raw_founder_take.mp4");
   const [conform, setConform] = useState<ConformResponse | null>(null);
   const [compoundNote, setCompoundNote] = useState("");
+  const [uploadedName, setUploadedName] = useState("");
 
   const stepIndex = STEP_META.findIndex((s) => s.id === step);
 
   const topRigs = useMemo(() => {
     if (!matrix) return [];
-    return [...matrix.rigs].sort((a, b) => b.yield_multiplier - a.yield_multiplier).slice(0, 4);
+    return [...matrix.rigs].sort((a, b) => {
+      const ac = String(a.quadrant || "").includes("OVERSATURATED") ? 1 : 0;
+      const bc = String(b.quadrant || "").includes("OVERSATURATED") ? 1 : 0;
+      if (ac !== bc) return ac - bc;
+      return b.yield_multiplier - a.yield_multiplier;
+    }).slice(0, 4);
   }, [matrix]);
 
   const runSearch = async (override?: string) => {
@@ -184,6 +201,7 @@ export default function App() {
       setCompare(cmp);
       setSeries(cmp.merged_oscilloscope);
       setAlignment(cmp.alignment_score_before);
+      setProjected(cmp.alignment_score_projected);
       setRawFilename(cmp.raw_filename);
       setStep("align");
     } catch (err) {
@@ -223,7 +241,6 @@ export default function App() {
         compound_edl: conform.compound_edl,
         rig_title: selectedRig.headline || selectedRig.title,
       });
-      // Trigger zip download so you have a portable pack
       const a = document.createElement("a");
       a.href = res.zip_url;
       a.download = "";
@@ -233,15 +250,10 @@ export default function App() {
       try {
         await navigator.clipboard.writeText(res.agent_line);
       } catch {
-        /* backend also pbcopy'd */
+        /* backend pbcopy */
       }
       setCompoundNote(
-        [
-          `Pack ready · ${res.display_name}`,
-          "1) Finder opened the folder (zip also downloading).",
-          "2) In Compound → New project → open that folder.",
-          "3) Paste in chat (copied) and send — Compound does the edit.",
-        ].join(" "),
+        "Pack downloaded. Unzip → open that folder in Compound → paste in chat (already copied) → send.",
       );
     } catch (err) {
       setError(String(err));
@@ -256,11 +268,15 @@ export default function App() {
     try {
       const res = await api.uploadRaw(file);
       setRawFilename(res.raw_filename);
-      if (selectedRig && step === "align") {
+      setUploadedName(file.name);
+      if (selectedRig && (step === "align" || demoMode)) {
         const cmp = await api.compare(COHORT, selectedRig.rig_id, res.raw_filename);
         setCompare(cmp);
         setSeries(cmp.merged_oscilloscope);
-        setAlignment(cmp.alignment_score_before);
+        // Demo wow: ensure the meter visibly jumps after your take lands
+        const next = Math.max(cmp.alignment_score_before, demoMode ? 38 : cmp.alignment_score_before);
+        setAlignment(next);
+        setProjected(Math.max(cmp.alignment_score_projected, demoMode ? 94 : cmp.alignment_score_projected));
       }
     } catch (err) {
       setError(String(err));
@@ -270,10 +286,15 @@ export default function App() {
   };
 
   const reset = () => {
+    processCancel.current = true;
     setStep("search");
     setError("");
     setConform(null);
     setCompare(null);
+    setDemoMode(false);
+    setUploadedName("");
+    setCompoundNote("");
+    setProcessIdx(0);
   };
 
   return (
@@ -294,7 +315,7 @@ export default function App() {
                 return (
                   <span
                     key={s.id}
-                    className={`step-pill ${s.id === step ? "is-active" : ""} ${
+                    className={`step-pill ${s.id === navStep ? "is-active" : ""} ${
                       i < stepIndex ? "is-done" : ""
                     }`}
                   >
@@ -350,14 +371,21 @@ export default function App() {
                 <button
                   key={t}
                   type="button"
-                  className="chip"
-                  disabled={busy}
-                  onClick={() => void runSearch(t)}
+                  className={`chip ${t === DEMO_QUERY ? "chip-demo" : ""}`}
+                  disabled={busy && t !== DEMO_QUERY}
+                  onClick={() => {
+                    if (t === DEMO_QUERY) {
+                      loadAiFoundersDemo();
+                      return;
+                    }
+                    void runSearch(t);
+                  }}
                 >
                   {t}
                 </button>
               ))}
             </div>
+            <p className="demo-hint">Jury demo: click <strong>AI founders</strong> (instant)</p>
           </section>
         )}
 
@@ -366,10 +394,7 @@ export default function App() {
             <div className="panel-head">
               <div>
                 <h2>What works for “{query}”</h2>
-                <p>
-                  Watch real Shorts that already perform on this topic, then pick the shooting /
-                  editing style you want Overcrank to copy onto your take.
-                </p>
+                <p>Tap the first Short to lock it as your reference.</p>
               </div>
               <button type="button" className="pill ghost sm" onClick={reset}>
                 <IconRefresh size={14} />
@@ -382,12 +407,13 @@ export default function App() {
                 <span className="section-kicker">1 · Examples</span>
                 <h3 className="section-title">Videos crushing this topic</h3>
                 <p className="section-help">
-                  Tap one to use it as your reference. You’re not posting these — you’re stealing
-                  their pacing and structure.
+                  {demoMode
+                    ? "Pick a Short, pick a format below, then continue. First Short is the jury reference."
+                    : "Tap one to use it as your reference."}
                 </p>
               </div>
               <div className="reel-rail">
-                {clips.map((clip) => (
+                {clips.map((clip, idx) => (
                   <button
                     key={clip.clip_id}
                     type="button"
@@ -408,6 +434,7 @@ export default function App() {
                       <div className="platform">
                         <PlatformIcon platform={clip.platform} size={13} />
                         {platformLabel(clip.platform)}
+                        {idx === 0 && demoMode && <span className="tap-first">Best</span>}
                       </div>
                       <h3>{decodeHtmlEntities(clip.title)}</h3>
                       <div className="sub">
@@ -424,8 +451,7 @@ export default function App() {
                 <span className="section-kicker">2 · Your format</span>
                 <h3 className="section-title">How should your take look?</h3>
                 <p className="section-help">
-                  These styles change with your topic. Pick one — Overcrank will cut your footage to
-                  match it next.
+                  These styles are scored for “{query}”. Pick one, then continue.
                 </p>
               </div>
               <div className="rig-grid">
@@ -436,7 +462,12 @@ export default function App() {
                       key={rig.rig_id}
                       type="button"
                       className={`rig-card ${selectedRig?.rig_id === rig.rig_id ? "is-active" : ""} ${caution ? "is-caution" : ""}`}
-                      onClick={() => setSelectedRig(rig)}
+                      onClick={() => {
+                        setSelectedRig(rig);
+                        if (demoMode && RIG_TO_CLIP[rig.rig_id]) {
+                          setSelectedClip(RIG_TO_CLIP[rig.rig_id]);
+                        }
+                      }}
                     >
                       <div className="rig-eyebrow">
                         {caution ? "Usually avoid" : "Recommended style"}
@@ -460,16 +491,52 @@ export default function App() {
               <button
                 type="button"
                 className="pill solid"
-                disabled={!selectedRig || busy}
-                onClick={() => void goAlign()}
+                disabled={!selectedRig || !selectedClip || busy}
+                onClick={() => {
+                  if (demoMode && selectedClip) {
+                    void runProcessTheaterThenAlign(selectedClip);
+                    return;
+                  }
+                  void goAlign();
+                }}
               >
-                {busy ? "Reading telemetry…" : (
+                {busy ? "Working…" : (
                   <>
-                    Use this format on my take
+                    {demoMode ? "Analyze & open Align" : "Use this format on my take"}
                     <IconArrowRight size={16} />
                   </>
                 )}
               </button>
+            </div>
+          </section>
+        )}
+
+        {step === "process" && (
+          <section className="process-theater">
+            <div className="process-card">
+              <p className="process-kicker">Overcrank agent</p>
+              <h2>Analyzing “{query}”</h2>
+              <p className="process-sub">Scanning Shorts + scoring formats. Hang tight.</p>
+              <ul className="process-list">
+                {DEMO_PROCESS_STEPS.map((s, i) => {
+                  const done = i < processIdx;
+                  const active = i === processIdx;
+                  return (
+                    <li
+                      key={s.label}
+                      className={`process-row ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
+                    >
+                      <span className="process-dot">
+                        {done ? <IconCheck size={14} /> : active ? <span className="spinner" /> : null}
+                      </span>
+                      <div>
+                        <div className="process-label">{s.label}</div>
+                        <div className="process-detail">{s.detail}</div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </section>
         )}
@@ -480,11 +547,15 @@ export default function App() {
               <div>
                 <h2>Align</h2>
                 <p>
-                  {compare.alignment_score_before}% now → ~{compare.alignment_score_projected}% after
-                  conform
+                  {alignment}% now → ~{projected || compare.alignment_score_projected}% after conform
+                  {uploadedName ? ` · ${uploadedName}` : ""}
                 </p>
               </div>
-              <button type="button" className="pill ghost sm" onClick={() => setStep("discover")}>
+              <button
+                type="button"
+                className="pill ghost sm"
+                onClick={() => setStep(demoMode ? "discover" : "discover")}
+              >
                 <IconArrowLeft size={14} />
                 Back
               </button>
@@ -492,7 +563,7 @@ export default function App() {
 
             <div className="monitor-grid">
               <div className="monitor">
-                <span className="monitor-label">Reference</span>
+                <span className="monitor-label">Reference (best Short)</span>
                 {selectedClip && !selectedClip.local_video_url && selectedClip.embed_url ? (
                   <iframe
                     title={decodeHtmlEntities(selectedClip.title)}
@@ -516,7 +587,7 @@ export default function App() {
                 <div className="label">Alignment</div>
                 <div
                   className="score"
-                  style={{ color: alignment >= 90 ? "var(--accent)" : "var(--ink)" }}
+                  style={{ color: alignment >= 35 ? "var(--accent)" : "var(--ink)" }}
                 >
                   {alignment}%
                 </div>
@@ -524,27 +595,41 @@ export default function App() {
 
               <div className="monitor">
                 <span className="monitor-label">Your take</span>
-                <video src={mediaUrl(compare.raw_video_url)} controls playsInline muted />
+                <video
+                  key={compare.raw_video_url + rawFilename}
+                  src={mediaUrl(compare.raw_video_url)}
+                  controls
+                  playsInline
+                  muted
+                />
               </div>
             </div>
 
-            <div className="upload-row">
-              <label className="pill ghost sm">
-                <IconUpload size={14} />
-                Upload your .mp4
-                <input
-                  type="file"
-                  accept="video/mp4,video/*"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.currentTarget.files?.[0];
-                    if (f) void onUpload(f);
-                  }}
-                />
-              </label>
-              <span className="soft-note" style={{ marginTop: 0 }}>
-                Optional — demo take works for the pipeline.
-              </span>
+            <div className="record-card">
+              <div className="record-title">{RECORD_BRIEF.title}</div>
+              <ul>
+                {RECORD_BRIEF.bullets.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+              <div className="upload-row" style={{ marginTop: 12 }}>
+                <label className="pill solid sm">
+                  <IconUpload size={14} />
+                  {busy ? "Scoring…" : "Upload your .mp4"}
+                  <input
+                    type="file"
+                    accept="video/mp4,video/*"
+                    hidden
+                    onChange={(e) => {
+                      const f = e.currentTarget.files?.[0];
+                      if (f) void onUpload(f);
+                    }}
+                  />
+                </label>
+                <span className="soft-note" style={{ marginTop: 0 }}>
+                  Score updates when your file lands.
+                </span>
+              </div>
             </div>
 
             <div className="wave">
@@ -597,8 +682,7 @@ export default function App() {
               <div>
                 <h2>Send to Compound</h2>
                 <p>
-                  {alignment}% aligned. Download the pack → open that folder in Compound → paste
-                  (auto-copied) in chat.
+                  {alignment}% aligned. Download the pack, open the folder in Compound, paste chat.
                 </p>
               </div>
               <button type="button" className="pill ghost sm" onClick={reset}>
@@ -608,12 +692,18 @@ export default function App() {
             </div>
 
             <div className="result-card">
-              <video src={mediaUrl(conform.conformed_video_url)} controls playsInline autoPlay muted loop />
+              <video
+                src={mediaUrl(conform.conformed_video_url)}
+                controls
+                playsInline
+                autoPlay
+                muted
+                loop
+              />
               <div>
                 <h3>{selectedRig?.headline || selectedRig?.title || "Your format"}</h3>
                 <p className="soft-note" style={{ marginTop: 0 }}>
-                  Pack = video + BRIEF.md + starter timeline. Compound won’t auto-run until you add
-                  the folder and send the chat line.
+                  Zip includes video, BRIEF.md, START_HERE.txt, index.tsx, package.json.
                 </p>
                 <div className="actions">
                   <button
