@@ -19,3 +19,8 @@ backend/fixtures/oriane_http_cache/
 .pytest_cache/
 coverage/
 backend/media/raw/uploaded_*.mp4
+
+# Compound handoff packs (generated)
+backend/media/compound_handoffs/
+.cursor/
+*.tsbuildinfo

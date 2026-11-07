@@ -1,0 +1,108 @@
+{
+  "clips": [
+    {
+      "clip_id": "yt_street_mic_01",
+      "platform": "youtube",
+      "title": "Street mic founder pitch (hook in 1s)",
+      "creator": "@hippodupac",
+      "topics": ["founder", "street", "interview", "startup", "ai", "mic", "walking"],
+      "video_id": "demo_street",
+      "local_video": "reels/reel_street_mic.mp4",
+      "views": 412000,
+      "yield_multiplier": 3.45,
+      "saturation_pct": 1.6,
+      "rig_id": "rig_street_broll_punch"
+    },
+    {
+      "clip_id": "yt_ai_agent_01",
+      "platform": "youtube",
+      "title": "AI agent demo — rapid cuts",
+      "creator": "@hippodupac",
+      "topics": ["ai", "agent", "llm", "demo", "product", "hackathon", "tool", "founder"],
+      "video_id": "demo_ai",
+      "local_video": "reels/reel_ai_agent.mp4",
+      "views": 520000,
+      "yield_multiplier": 3.2,
+      "saturation_pct": 2.1,
+      "rig_id": "rig_street_broll_punch"
+    },
+    {
+      "clip_id": "yt_whiteboard_01",
+      "platform": "youtube",
+      "title": "Whiteboard system design punch-in",
+      "creator": "@databysumit",
+      "topics": ["whiteboard", "diagram", "architecture", "system", "design", "marker"],
+      "video_id": "demo_wb",
+      "local_video": "reels/reel_whiteboard.mp4",
+      "views": 289000,
+      "yield_multiplier": 2.95,
+      "saturation_pct": 2.4,
+      "rig_id": "rig_whiteboard_kinetic"
+    },
+    {
+      "clip_id": "yt_salary_card_01",
+      "platform": "youtube",
+      "title": "Compensation flash + hard cut",
+      "creator": "@jeanklee",
+      "topics": ["salary", "comp", "career", "engineer", "metric", "offer", "pay"],
+      "video_id": "demo_salary",
+      "local_video": "reels/reel_salary.mp4",
+      "views": 380000,
+      "yield_multiplier": 3.72,
+      "saturation_pct": 1.9,
+      "rig_id": "rig_salary_receipt_hook"
+    },
+    {
+      "clip_id": "tt_terminal_01",
+      "platform": "tiktok",
+      "title": "Terminal top / face cam bottom",
+      "creator": "@jeanklee",
+      "topics": ["code", "terminal", "dashboard", "split", "devtools", "engineering", "coding"],
+      "video_id": "demo_term",
+      "local_video": "reels/reel_terminal.mp4",
+      "views": 215000,
+      "yield_multiplier": 2.6,
+      "saturation_pct": 4.1,
+      "rig_id": "rig_dual_telemetry_split"
+    },
+    {
+      "clip_id": "ig_couch_01",
+      "platform": "instagram",
+      "title": "Two-shot couch podcast mic",
+      "creator": "Cohort Median",
+      "topics": ["podcast", "couch", "studio", "interview", "static", "two-shot"],
+      "video_id": "demo_pod",
+      "local_video": "reels/reel_podcast.mp4",
+      "views": 19400,
+      "yield_multiplier": 0.58,
+      "saturation_pct": 48.5,
+      "rig_id": "rig_static_podcast_couch"
+    },
+    {
+      "clip_id": "yt_growth_playbook_01",
+      "platform": "youtube",
+      "title": "Growth playbook metric card",
+      "creator": "@datawithamney",
+      "topics": ["growth", "playbook", "marketing", "funnel", "metric", "saas", "career"],
+      "video_id": "demo_growth",
+      "local_video": "reels/reel_salary.mp4",
+      "views": 310000,
+      "yield_multiplier": 2.85,
+      "saturation_pct": 3.0,
+      "rig_id": "rig_salary_receipt_hook"
+    },
+    {
+      "clip_id": "tt_street_vlog_01",
+      "platform": "tiktok",
+      "title": "Walking vlog mic energy",
+      "creator": "@hippodupac",
+      "topics": ["vlog", "walking", "street", "energy", "broll", "outdoor", "founder"],
+      "video_id": "demo_vlog",
+      "local_video": "reels/reel_street_mic.mp4",
+      "views": 198000,
+      "yield_multiplier": 2.9,
+      "saturation_pct": 2.8,
+      "rig_id": "rig_street_broll_punch"
+    }
+  ]
+}
