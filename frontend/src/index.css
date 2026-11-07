@@ -526,6 +526,164 @@ button {
   padding-top: 12px;
 }
 
+.demo-hint {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.demo-hint strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.chip-demo {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--ink);
+}
+
+.tap-first {
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.process-theater {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 0 64px;
+}
+
+.process-card {
+  width: min(560px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  padding: 28px 28px 22px;
+  animation: rise 0.4s ease both;
+}
+
+.process-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.process-card h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.process-sub {
+  margin: 8px 0 22px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.process-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.process-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: start;
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+}
+
+.process-row.is-active,
+.process-row.is-done {
+  opacity: 1;
+}
+
+.process-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.process-row.is-active .process-dot {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.process-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.process-detail {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--ink);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.record-card {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.record-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.record-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.record-card li + li {
+  margin-top: 4px;
+}
+
+.pill.sm {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
 .brief-details summary {
   cursor: pointer;
   color: var(--muted);
