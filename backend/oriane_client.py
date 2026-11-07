@@ -14,12 +14,14 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
+import asyncio
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "yield_matrix_cache.json"
 ORIANE_CACHE_DIR = Path(__file__).parent / "fixtures" / "oriane_http_cache"
@@ -193,6 +195,20 @@ def _engagement_score(video: dict) -> float:
     comments = float(video.get("commentsCount") or 0)
     shares = float(video.get("sharesCount") or 0)
     return (likes + comments * 2.0 + shares * 3.0) / views
+
+
+def _live_yield_enabled() -> bool:
+    """Prefer live Oriane metrics for format cards when a key exists (even in DEMO_MODE)."""
+    flag = os.getenv("YIELD_LIVE", "").strip().lower()
+    if flag in {"0", "false", "no", "off"}:
+        return False
+    if flag in {"1", "true", "yes", "on"}:
+        return True
+    return bool(os.getenv("ORIANE_API_KEY", "").strip())
+
+
+def _terms_from_text(text: str, limit: int = 6) -> List[str]:
+    return [t for t in re.split(r"[^a-z0-9+#]+", (text or "").lower()) if len(t) > 3][:limit]
 
 
 class OrianeClient:
@@ -473,7 +489,12 @@ class OrianeClient:
         cohort_data["oriane_mode"] = "fixture"
         cohort_data["oriane_connected"] = self.connected
 
-        if live_visual_query and (self.api_key or any(ORIANE_CACHE_DIR.glob("*.json"))):
+        demo = os.getenv("DEMO_MODE", "1").strip().lower() in {"1", "true", "yes", "on"}
+        if (
+            live_visual_query
+            and not demo
+            and (self.api_key or any(ORIANE_CACHE_DIR.glob("*.json")))
+        ):
             try:
                 terms = [t for t in live_visual_query.lower().split() if len(t) > 3][:6]
                 payload, source = await self.search_contents(

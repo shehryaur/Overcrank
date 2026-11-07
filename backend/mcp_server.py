@@ -2,19 +2,28 @@
 
 Tools mirror the Overcrank HTTP surface so external agents can:
   - scan Format Yield Matrix cohorts
+  - discover short-form clips for a topic
   - audit raw-take telemetry (PySceneDetect + OpenCV + librosa)
   - compare reference vs raw alignment
   - conform footage and export a Compound.mov EDL runbook
 """
 
+import os
 from pathlib import Path
 from typing import Any, Dict
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
+# Crowd demos default to fixtures unless the operator opts out.
+os.environ.setdefault("DEMO_MODE", "1")
 
 from mcp.server.fastmcp import FastMCP
 
 from conform_engine import conform_video_to_rig
 from generate_demo_media import RAW_FILE, REF_FILE, ensure_demo_videos
 from oriane_client import OrianeClient
+from shortform_discovery import discover_shortform
 from telemetry_engine import compare_telemetry, extract_video_telemetry
 
 mcp = FastMCP("overcrank-telemetry-rig")
@@ -37,6 +46,12 @@ async def scan_format_yield_matrix(
         "oriane_mode": matrix.get("oriane_mode", "fixture"),
         "high_yield_rigs": high_yield_rigs,
     }
+
+
+@mcp.tool()
+async def discover_topic_shortform(query: str = "AI founders", limit: int = 6) -> Dict[str, Any]:
+    """Find Shorts / Reels / TikTok stand-ins for a topic (local offline clips in DEMO_MODE)."""
+    return await discover_shortform(query, limit=limit)
 
 
 @mcp.tool()

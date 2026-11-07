@@ -152,6 +152,19 @@ def _optical_flow_series(path: Path, sample_hz: int) -> tuple[float, List[Dict[s
     return duration_sec, optical_series
 
 
+def _numpy_rms(y: np.ndarray, frame_length: int, hop_length: int) -> np.ndarray:
+    """Windowed RMS matching librosa.feature.rms when Numba cannot cache."""
+    if y.size < frame_length:
+        return np.array([float(np.sqrt(np.mean(np.square(y))))], dtype=np.float32)
+    n_frames = 1 + (y.size - frame_length) // hop_length
+    out = np.empty(n_frames, dtype=np.float32)
+    for i in range(n_frames):
+        start = i * hop_length
+        frame = y[start : start + frame_length]
+        out[i] = np.sqrt(np.mean(np.square(frame)))
+    return out
+
+
 def _vocal_rms_db(path: Path, sample_hz: int, n_bins: int) -> np.ndarray:
     """Extract mono WAV via ffmpeg, then librosa/soundfile RMS → dBFS."""
     if not HAS_AUDIO:
@@ -185,10 +198,19 @@ def _vocal_rms_db(path: Path, sample_hz: int, n_bins: int) -> np.ndarray:
             return np.full(n_bins, -45.0)
 
         hop_length = max(1, int(sr / sample_hz))
-        rms = librosa.feature.rms(y=y, frame_length=hop_length * 2, hop_length=hop_length)[0]
+        frame_length = hop_length * 2
+        try:
+            rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+        except Exception:
+            # Numba cache can fail inside restricted runtimes; same windowed RMS.
+            rms = _numpy_rms(y, frame_length, hop_length)
         if float(np.max(rms)) <= 1e-9:
             return np.full(n_bins, -60.0)
-        rms_db = librosa.amplitude_to_db(rms, ref=np.max)
+        try:
+            rms_db = librosa.amplitude_to_db(rms, ref=np.max)
+        except Exception:
+            peak = float(np.max(rms))
+            rms_db = 20.0 * np.log10(np.maximum(rms, 1e-10) / peak)
         if len(rms_db) < n_bins:
             pad = np.full(n_bins - len(rms_db), float(rms_db[-1]) if len(rms_db) else -45.0)
             rms_db = np.concatenate([rms_db, pad])
