@@ -6,21 +6,27 @@ __pycache__/
 venv/
 node_modules/
 dist/
-.env
-backend/.env
 .DS_Store
 *.log
 .vite/
+.pytest_cache/
+coverage/
+*.pyc
+
+# Secrets — never commit real keys
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+**/*.pem
+**/credentials.json
+**/secrets.json
+
+# Generated / local media
 backend/media/conformed/*.mp4
 backend/media/conformed/trimmed_*.mp4
 backend/media/references/_tmp_parts/
-backend/fixtures/oriane_http_cache/
-*.pyc
-.pytest_cache/
-coverage/
 backend/media/raw/uploaded_*.mp4
-
-# Compound handoff packs (generated)
 backend/media/compound_handoffs/
-.cursor/
-*.tsbuildinfo
+backend/fixtures/oriane_http_cache/
