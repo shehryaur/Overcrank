@@ -17,7 +17,6 @@ load_dotenv(Path(__file__).parent / ".env")
 
 from compound_handoff import package_compound_project, reveal_and_assist
 from conform_engine import conform_video_to_rig
-from format_discovery import build_topic_formats
 from generate_demo_media import MEDIA_DIR, RAW_FILE, REF_FILE, REELS_DIR, ensure_demo_videos
 from oriane_client import DEFAULT_COHORTS, OrianeClient
 from provider_keys import provider_flags, secrets_catalog
@@ -135,18 +134,11 @@ async def api_topic_search(req: TopicSearchRequest):
     q = (req.query or "").strip()
     if not q:
         raise HTTPException(status_code=400, detail="Enter a topic to search")
-    discovery = await discover_shortform(q, limit=max(4, min(req.limit, 12)))
-    # Formats change with the topic (Claude + Oriane), not fixed fixtures
-    matrix = await build_topic_formats(q, cohort_id=req.cohort_id, oriane=oriane)
+    discovery = await discover_shortform(
+        q, limit=max(4, min(req.limit, 12)), cohort_id=req.cohort_id
+    )
+    matrix = discovery.pop("matrix")
     preferred_rig = matrix["rigs"][0] if matrix.get("rigs") else None
-    if discovery["clips"] and preferred_rig:
-        # Point clips at the top format so selection stays consistent
-        for clip in discovery["clips"]:
-            if not clip.get("rig_id"):
-                clip["rig_id"] = preferred_rig["rig_id"]
-            # Surface format yield on the card when still default
-            if float(clip.get("yield_multiplier") or 0) <= 2.85:
-                clip["yield_multiplier"] = preferred_rig.get("yield_multiplier", clip.get("yield_multiplier"))
     return {
         "query": q,
         "discovery": discovery,
