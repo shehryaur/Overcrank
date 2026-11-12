@@ -66,6 +66,13 @@ function platformLabel(p: string) {
   return p;
 }
 
+function formatViews(n: number) {
+  if (!n) return "";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M views`;
+  if (n >= 1_000) return `${Math.round(n / 1000)}K views`;
+  return `${n} views`;
+}
+
 function clipLocalSrc(clip: ShortClip | null | undefined) {
   return clip?.local_video_url ? mediaUrl(clip.local_video_url) : "";
 }
@@ -155,13 +162,14 @@ export default function App() {
 
   const topRigs = useMemo(() => {
     if (!matrix) return [];
-    return [...matrix.rigs].sort((a, b) => {
-      const ac = String(a.quadrant || "").includes("OVERSATURATED") ? 1 : 0;
-      const bc = String(b.quadrant || "").includes("OVERSATURATED") ? 1 : 0;
-      if (ac !== bc) return ac - bc;
-      return b.yield_multiplier - a.yield_multiplier;
-    }).slice(0, 4);
+    return [...matrix.rigs].sort((a, b) => (b.mean_views || 0) - (a.mean_views || 0));
   }, [matrix]);
+
+  const styleClips = useMemo(() => {
+    if (!selectedRig) return clips;
+    const grouped = clips.filter((clip) => clip.rig_id === selectedRig.rig_id);
+    return grouped.length ? grouped : clips;
+  }, [clips, selectedRig]);
 
   const runSearch = async (override?: string) => {
     const q = (override ?? query).trim();
@@ -269,14 +277,12 @@ export default function App() {
       const res = await api.uploadRaw(file);
       setRawFilename(res.raw_filename);
       setUploadedName(file.name);
-      if (selectedRig && (step === "align" || demoMode)) {
+      if (selectedRig && step === "align") {
         const cmp = await api.compare(COHORT, selectedRig.rig_id, res.raw_filename);
         setCompare(cmp);
         setSeries(cmp.merged_oscilloscope);
-        // Demo wow: ensure the meter visibly jumps after your take lands
-        const next = Math.max(cmp.alignment_score_before, demoMode ? 38 : cmp.alignment_score_before);
-        setAlignment(next);
-        setProjected(Math.max(cmp.alignment_score_projected, demoMode ? 94 : cmp.alignment_score_projected));
+        setAlignment(cmp.alignment_score_before);
+        setProjected(cmp.alignment_score_projected);
       }
     } catch (err) {
       setError(String(err));
@@ -286,15 +292,12 @@ export default function App() {
   };
 
   const reset = () => {
-    processCancel.current = true;
     setStep("search");
     setError("");
     setConform(null);
     setCompare(null);
-    setDemoMode(false);
     setUploadedName("");
     setCompoundNote("");
-    setProcessIdx(0);
   };
 
   return (
@@ -367,25 +370,18 @@ export default function App() {
               </button>
             </form>
             <div className="topic-chips">
-              {DEMO_TOPICS.map((t) => (
+              {TOPIC_CHIPS.map((t) => (
                 <button
                   key={t}
                   type="button"
-                  className={`chip ${t === DEMO_QUERY ? "chip-demo" : ""}`}
-                  disabled={busy && t !== DEMO_QUERY}
-                  onClick={() => {
-                    if (t === DEMO_QUERY) {
-                      loadAiFoundersDemo();
-                      return;
-                    }
-                    void runSearch(t);
-                  }}
+                  className="chip"
+                  disabled={busy}
+                  onClick={() => void runSearch(t)}
                 >
                   {t}
                 </button>
               ))}
             </div>
-            <p className="demo-hint">Jury demo: click <strong>AI founders</strong> (instant)</p>
           </section>
         )}
 
@@ -394,7 +390,7 @@ export default function App() {
             <div className="panel-head">
               <div>
                 <h2>What works for “{query}”</h2>
-                <p>Tap the first Short to lock it as your reference.</p>
+                <p>Pick a style group, then film your take the same way.</p>
               </div>
               <button type="button" className="pill ghost sm" onClick={reset}>
                 <IconRefresh size={14} />
@@ -404,27 +400,56 @@ export default function App() {
 
             <div className="section-block">
               <div className="section-label">
-                <span className="section-kicker">1 · Examples</span>
-                <h3 className="section-title">Videos crushing this topic</h3>
+                <span className="section-kicker">1 · Style</span>
+                <h3 className="section-title">Pick the way you want to film</h3>
                 <p className="section-help">
-                  {demoMode
-                    ? "Pick a Short, pick a format below, then continue. First Short is the jury reference."
-                    : "Tap one to use it as your reference."}
+                  Each card is a group of videos shot the same way. Pick one, then film yours like it.
+                </p>
+              </div>
+              <div className="rig-grid">
+                {topRigs.map((rig) => {
+                  const best = formatViews(rig.mean_views || 0);
+                  return (
+                    <button
+                      key={rig.rig_id}
+                      type="button"
+                      className={`rig-card ${selectedRig?.rig_id === rig.rig_id ? "is-active" : ""}`}
+                      onClick={() => {
+                        setSelectedRig(rig);
+                        const group = clips.filter((clip) => clip.rig_id === rig.rig_id);
+                        if (group[0]) setSelectedClip(group[0]);
+                      }}
+                    >
+                      <div className="rig-eyebrow">Style</div>
+                      <div className="title">{rig.headline || rig.title}</div>
+                      {rig.plain_why && <p className="rig-why">{rig.plain_why}</p>}
+                      <div className="stats">
+                        <span className="yield">{rig.sample_count} videos in this group</span>
+                        {best && <span>Best {best}</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="section-block">
+              <div className="section-label">
+                <span className="section-kicker">2 · This group</span>
+                <h3 className="section-title">
+                  Videos shot like “{selectedRig?.headline || selectedRig?.title || "this style"}”
+                </h3>
+                <p className="section-help">
+                  Highest view count first. The selected one is the reference you will match.
                 </p>
               </div>
               <div className="reel-rail">
-                {clips.map((clip, idx) => (
+                {styleClips.map((clip) => (
                   <button
                     key={clip.clip_id}
                     type="button"
                     className={`reel-card ${selectedClip?.clip_id === clip.clip_id ? "is-active" : ""}`}
-                    onClick={() => {
-                      setSelectedClip(clip);
-                      if (clip.rig_id && matrix) {
-                        const match = matrix.rigs.find((r) => r.rig_id === clip.rig_id);
-                        if (match) setSelectedRig(match);
-                      }
-                    }}
+                    onClick={() => setSelectedClip(clip)}
                   >
                     <div className="reel-frame">
                       <ClipPlayer clip={clip} />
@@ -434,56 +459,15 @@ export default function App() {
                       <div className="platform">
                         <PlatformIcon platform={clip.platform} size={13} />
                         {platformLabel(clip.platform)}
-                        {idx === 0 && demoMode && <span className="tap-first">Best</span>}
                       </div>
                       <h3>{decodeHtmlEntities(clip.title)}</h3>
                       <div className="sub">
-                        {clip.creator} · {clip.yield_multiplier.toFixed(2)}× engagement
+                        {clip.creator}
+                        {clip.views ? ` · ${formatViews(clip.views)}` : ""}
                       </div>
                     </div>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="section-block">
-              <div className="section-label">
-                <span className="section-kicker">2 · Your format</span>
-                <h3 className="section-title">How should your take look?</h3>
-                <p className="section-help">
-                  These styles are scored for “{query}”. Pick one, then continue.
-                </p>
-              </div>
-              <div className="rig-grid">
-                {topRigs.map((rig) => {
-                  const caution = (rig.quadrant || "").includes("OVERSATURATED");
-                  return (
-                    <button
-                      key={rig.rig_id}
-                      type="button"
-                      className={`rig-card ${selectedRig?.rig_id === rig.rig_id ? "is-active" : ""} ${caution ? "is-caution" : ""}`}
-                      onClick={() => {
-                        setSelectedRig(rig);
-                        if (demoMode && RIG_TO_CLIP[rig.rig_id]) {
-                          setSelectedClip(RIG_TO_CLIP[rig.rig_id]);
-                        }
-                      }}
-                    >
-                      <div className="rig-eyebrow">
-                        {caution ? "Usually avoid" : "Recommended style"}
-                      </div>
-                      <div className="title">{rig.headline || rig.title}</div>
-                      {rig.plain_why && <p className="rig-why">{rig.plain_why}</p>}
-                      <div className="stats">
-                        <span className="yield">
-                          {rig.yield_multiplier.toFixed(2)}× more engagement
-                        </span>
-                        <span>{rig.saturation_pct}% of feed looks like this</span>
-                        <span>{rig.target_specs.splices_per_10s} cuts / 10s</span>
-                      </div>
-                    </button>
-                  );
-                })}
               </div>
             </div>
 
@@ -492,51 +476,15 @@ export default function App() {
                 type="button"
                 className="pill solid"
                 disabled={!selectedRig || !selectedClip || busy}
-                onClick={() => {
-                  if (demoMode && selectedClip) {
-                    void runProcessTheaterThenAlign(selectedClip);
-                    return;
-                  }
-                  void goAlign();
-                }}
+                onClick={() => void goAlign()}
               >
                 {busy ? "Working…" : (
                   <>
-                    {demoMode ? "Analyze & open Align" : "Use this format on my take"}
+                    Film in this style
                     <IconArrowRight size={16} />
                   </>
                 )}
               </button>
-            </div>
-          </section>
-        )}
-
-        {step === "process" && (
-          <section className="process-theater">
-            <div className="process-card">
-              <p className="process-kicker">Overcrank agent</p>
-              <h2>Analyzing “{query}”</h2>
-              <p className="process-sub">Scanning Shorts + scoring formats. Hang tight.</p>
-              <ul className="process-list">
-                {DEMO_PROCESS_STEPS.map((s, i) => {
-                  const done = i < processIdx;
-                  const active = i === processIdx;
-                  return (
-                    <li
-                      key={s.label}
-                      className={`process-row ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
-                    >
-                      <span className="process-dot">
-                        {done ? <IconCheck size={14} /> : active ? <span className="spinner" /> : null}
-                      </span>
-                      <div>
-                        <div className="process-label">{s.label}</div>
-                        <div className="process-detail">{s.detail}</div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
             </div>
           </section>
         )}
@@ -554,7 +502,7 @@ export default function App() {
               <button
                 type="button"
                 className="pill ghost sm"
-                onClick={() => setStep(demoMode ? "discover" : "discover")}
+                onClick={() => setStep("discover")}
               >
                 <IconArrowLeft size={14} />
                 Back
